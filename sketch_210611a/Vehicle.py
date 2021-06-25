@@ -30,7 +30,7 @@ class Vehicle():
 
     def display(self):
         # Draw a triangle rotated in the direction of velocity
-        theta = self.velocity.heading() - PI / 2
+        theta = self.velocity.heading() + PI / 2
         fill(127)
         noStroke()
         strokeWeight(1)
@@ -42,3 +42,21 @@ class Vehicle():
             vertex(-self.r, self.r * 2)
             vertex(self.r, self.r * 2)
             endShape(CLOSE)
+    def arrive(self, target):
+
+        # A vector pointing from the location to the target
+        desired = target - self.position
+        d = desired.mag()
+
+        # Scale with arbitrary damping within 100 pixels
+        if (d < 100):
+            m = map(d, 0, 100, 0, self.maxspeed)
+            desired.setMag(m)
+        else:
+            desired.setMag(self.maxspeed)
+
+        # Steering = Desired minus velocity
+        steer = desired - self.velocity
+        steer.limit(self.maxforce)  # Limit to maximum steering force
+
+        self.applyForce(steer)
