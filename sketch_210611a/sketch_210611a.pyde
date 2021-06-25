@@ -28,15 +28,18 @@ def setup():
     stepCount = 0
     size(640, 360)
     velocity = PVector(0, 0)
+    drawGraph()
     vehicle = Vehicle(width/2+10, height/2+10, velocity)
     food = Food(random(0,640),random(0,360),PVector(0,0))
-    drawGraph()
+    resetPosition(food)
+    resetPosition(vehicle)
     path = bfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
 
 
 def draw():
     global path
     global stepCount
+    global foodCount
     
     drawGraph()
     updateWorld()
@@ -47,15 +50,16 @@ def draw():
     if (((vehicle.position[0])//20,(vehicle.position[1])//20) == (path[stepCount][0],path[stepCount][1]) and stepCount < len(path)-1):
         stepCount+=1
     if ((vehicle.position[0])//20,(vehicle.position[1])//20) == ((food.position[0])//20,(food.position[1])//20):
-        resetFood()
+        resetPosition(food)
+        foodCount+=1
         path = bfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
         stepCount = 0
 
 
 def drawUI():
     #background(255)
-    fill(50)
-    text(str(foodCount),40,40,30,30)
+    fill(255)
+    text(str(foodCount),vehicle.position[0]+15,vehicle.position[1]+15)
     
 def updateWorld():
     global path
@@ -66,10 +70,14 @@ def updateWorld():
     food.update()
     food.display()
 
-def resetFood():
-    global foodCount
-    foodCount+=1
-    food.position = PVector(random(0,width),random(0,height))
+def resetPosition(object):
+    global mapa
+    
+    while True:
+        new_position = PVector(random(0,width),random(0,height))
+        if mapa[int(new_position.y/20)][int(new_position.x/20)] <= 10:
+            object.position = new_position
+            break
 
 def bfs(start, goal):
     count = 0
@@ -134,9 +142,9 @@ def graph_neighbors(current):
     
     removidos =[]
     for n in neighbors:
-        print(type(n))
-        print(type(n[0]))
-        print(mapa)
+        #print(type(n))
+        #print(type(n[0]))
+        #print(mapa)
         if(mapa[int(n[1])][int(n[0])] > 10):
             removidos.append(n)
     for n in removidos:
@@ -160,14 +168,14 @@ def drawGraph():
         for i in range(10,width,20):
             xoff+=inc
             cost = 0
-            x = noise(xoff,yoff)*255
-            if x < 63:
+            x = noise(xoff,yoff)*40
+            if x < 10:
                 cost = 1
                 fill(68,150,90) #custo baixo caminhar na grama
-            elif x < 126:
+            elif x < 20:
                 cost = 5
                 fill(150,75,0) #custo elevado caminhar na areia
-            elif x < 189:
+            elif x < 30:
                 cost = 10
                 fill(18,10,143) #custo medio caminhar na agua
             else:
