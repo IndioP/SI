@@ -33,12 +33,7 @@ def setup():
     food = Food(random(0,640),random(0,360),PVector(0,0))
     resetPosition(food)
     resetPosition(vehicle)
-    vX = (vehicle.position[0])//20
-    vY = (vehicle.position[1])//20
-    fX = (food.position[0])//20
-    fY = (food.position[1])//20
-    print('vX: {} \t vY: {} \t fX: {} \t fY: {} \t').format(vX,vY,fX,fY)
-    path = dfs((vX,vY), (fX,fY))
+    path = dfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
 
 
 def draw():
