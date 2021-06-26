@@ -9,8 +9,7 @@
 
 from Vehicle import Vehicle
 from Food import Food
-
-
+import heapq
 #variaveis para o perlinNoise
 inc = 0.2
 xoff = 0
@@ -33,7 +32,7 @@ def setup():
     food = Food(random(0,640),random(0,360),PVector(0,0))
     resetPosition(food)
     resetPosition(vehicle)
-    path = bfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
+    path = dijkstra(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
 
 
 def draw():
@@ -52,7 +51,7 @@ def draw():
     if ((vehicle.position[0])//20,(vehicle.position[1])//20) == ((food.position[0])//20,(food.position[1])//20):
         resetPosition(food)
         foodCount+=1
-        path = bfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
+        path = dijkstra(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
         stepCount = 0
 
 
@@ -150,8 +149,40 @@ def graph_neighbors(current):
     for n in removidos:
         neighbors.remove(n)
     return neighbors
-    
 
+def dijkstra(start, goal):
+    heap = []
+    neighbors = []
+    came_from = dict()
+    cost_so_far = dict()
+    
+    came_from[start] = None
+    cost_so_far[start] = 0
+    heapq.heappush(heap, (0, start))
+    while len(heap) != 0:
+        current = heapq.heappop(heap)[1]
+        if current == goal:
+            break
+        
+        for next in graph_neighbors(current):
+            new_cost = cost_so_far[current] + mapa[int(current[1])][int(current[0])]
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
+                cost = new_cost
+                heapq.heappush(heap, (cost, next))
+                came_from[next] = current
+    
+    current = goal 
+    path = []
+    while current != start: 
+        path.append(current)
+        stroke(0,255,0)
+        
+        line(current[0]*20+10,current[1]*20+10,came_from[current][0]*20+10,came_from[current][1]*20+10)
+        current = came_from[current]
+    path.append(start) # optional
+    path.reverse() # optional
+    return path
 
     
 def drawGraph():
