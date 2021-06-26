@@ -33,7 +33,12 @@ def setup():
     food = Food(random(0,640),random(0,360),PVector(0,0))
     resetPosition(food)
     resetPosition(vehicle)
-    path = bfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
+    vX = (vehicle.position[0])//20
+    vY = (vehicle.position[1])//20
+    fX = (food.position[0])//20
+    fY = (food.position[1])//20
+    print('vX: {} \t vY: {} \t fX: {} \t fY: {} \t').format(vX,vY,fX,fY)
+    path = dfs((vX,vY), (fX,fY))
 
 
 def draw():
@@ -52,7 +57,7 @@ def draw():
     if ((vehicle.position[0])//20,(vehicle.position[1])//20) == ((food.position[0])//20,(food.position[1])//20):
         resetPosition(food)
         foodCount+=1
-        path = bfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
+        path = dfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
         stepCount = 0
 
 
@@ -109,6 +114,31 @@ def bfs(start, goal):
         
         line(current[0]*20+10,current[1]*20+10,came_from[current][0]*20+10,came_from[current][1]*20+10)
         current = came_from[current]
+    path.append(start) # optional
+    path.reverse() # optional
+    return path
+
+def dfs(start, goal):
+    stack = []
+    stack.append(start)
+    parent = {}
+    parent[start] = None
+    
+    while len(stack) != 0:
+        current = stack.pop()
+        for neighbor in graph_neighbors(current):
+            if neighbor not in parent:
+                stack.append(neighbor)
+                parent[neighbor] = current
+                if current == goal:
+                    break
+                
+    current = goal 
+    path = []
+    while current != start: 
+        path.append(current)
+        current = parent[current]
+        
     path.append(start) # optional
     path.reverse() # optional
     return path
