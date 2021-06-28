@@ -11,7 +11,7 @@ class Vehicle():
         self.velocity = vel
         self.position = PVector(x, y)
         self.r = 6
-        self.maxspeed = 5
+        self.maxspeed = 15
         self.maxforce = 0.2
 
     # Method to update location

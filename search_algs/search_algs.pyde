@@ -53,18 +53,21 @@ def draw():
     if ((vehicle.position[0])//20,(vehicle.position[1])//20) == ((food.position[0])//20,(food.position[1])//20):
         resetPosition(food)
         foodCount+=1
-        if foodCount % 12 < 3:
+        if foodCount % 15 < 3:
             path = bfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
             algName = "BFS"
-        elif foodCount % 12 < 6:
+        elif foodCount % 15 < 6:
             path = dfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
             algName = "DFS"
-        elif foodCount % 12 < 9:
+        elif foodCount % 15 < 9:
             path = dijkstra(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
             algName = "Dijkstra"
-        elif foodCount % 12 < 12:
+        elif foodCount % 15 < 12:
             path = aEstrela(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
             algName = "A*"
+        elif foodCount % 15 < 15:
+            path = greedy(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
+            algName = "Greedy"
         stepCount = 0
     
     drawGraph()
@@ -202,6 +205,28 @@ def aEstrela(start, goal):
                 heapq.heappush(heap, (priority, next))
                 came_from[next] = current
     
+    return makePath(start, goal, came_from)
+
+def greedy(start, goal):
+    heap = []
+    heapq.heappush(heap, (0, start))
+    came_from = dict()
+    came_from[start] = None
+    visited = list()
+
+    while len(heap) != 0:
+        current = heapq.heappop(heap)[1]
+    
+        if current == goal:
+            break
+        
+        for next in graph_neighbors(current):
+            if next not in visited:
+                visited.append(next)
+                priority = heuristic(goal, next)
+                heapq.heappush(heap, (priority, next))
+                came_from[next] = current
+
     return makePath(start, goal, came_from)
 
 def heuristic(a, b):
