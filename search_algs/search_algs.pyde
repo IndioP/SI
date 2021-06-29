@@ -24,9 +24,13 @@ def setup():
     global food
     global foodCount
     global path
+    global visited
     global stepCount
     global algName
+    global cur
     
+    cur = 0
+    visited = list()
     foodCount = 0
     stepCount = 0
     size(640, 360)
@@ -42,44 +46,65 @@ def setup():
 
 def draw():
     global path
+    global visited
     global stepCount
     global foodCount
     global algName
+    global cur
     
     #moveAgent(PVector(path[stepCount][0]*20+10,path[stepCount][1]*20+10))
     #vehicle.position = PVector(path[stepCount][0]*20+10,path[stepCount][1]*20+10)
-    if (((vehicle.position[0])//20,(vehicle.position[1])//20) == (path[stepCount][0],path[stepCount][1]) and stepCount < len(path)-1):
-        stepCount+=1
-    if ((vehicle.position[0])//20,(vehicle.position[1])//20) == ((food.position[0])//20,(food.position[1])//20):
-        resetPosition(food)
-        foodCount+=1
-        if foodCount % 15 < 3:
-            path = bfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
-            algName = "BFS"
-        elif foodCount % 15 < 6:
-            path = dfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
-            algName = "DFS"
-        elif foodCount % 15 < 9:
-            path = dijkstra(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
-            algName = "Dijkstra"
-        elif foodCount % 15 < 12:
-            path = aEstrela(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
-            algName = "A*"
-        elif foodCount % 15 < 15:
-            path = greedy(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
-            algName = "Greedy"
-        stepCount = 0
     
-    drawGraph()
-    updateWorld()
-    draw_path()
+    if cur == 0:
+        drawGraph()
+        updateWorld()
+        
+    drawVisited()
     drawUI()
     
+    cur = cur + 1
+    if cur >= len(visited):
+        drawGraph()
+        draw_path()
+        updateWorld()
+        if (((vehicle.position[0])//20,(vehicle.position[1])//20) == (path[stepCount][0],path[stepCount][1]) and stepCount < len(path)-1):
+            stepCount+=1
+        if ((vehicle.position[0])//20,(vehicle.position[1])//20) == ((food.position[0])//20,(food.position[1])//20):
+            resetPosition(food)
+            foodCount+=1
+            cur = 0
+            visited = []
+            if foodCount % 5 < 1:
+                path = bfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
+                algName = "BFS"
+            elif foodCount % 5 < 2:
+                path = dfs(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
+                algName = "DFS"
+            elif foodCount % 5 < 3:
+                path = dijkstra(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
+                algName = "Dijkstra"
+            elif foodCount % 5 < 4:
+                path = aEstrela(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
+                algName = "A*"
+            elif foodCount % 5 < 5:
+                path = greedy(((vehicle.position[0])//20,(vehicle.position[1])//20), ((food.position[0])//20,(food.position[1])//20))
+                algName = "Greedy"
+            stepCount = 0
     fill(255)
     textSize(25)
     text(algName, 10, 25)
 
-
+def drawVisited():
+    global visited
+    global cur
+    
+    if(cur < len(visited)):
+        fill(200,200,55,70)
+        stroke(0)
+        square(visited[cur][0]*20,visited[cur][1]*20, 20)
+        delay(10)
+        
+    
 def drawUI():
     #background(255)
     fill(255)
@@ -118,16 +143,21 @@ def makePath(start, current, came_from):
 
 def bfs(start, goal):
     count = 0
+    global visited
     frontier = list()
     frontier.append(start)
+    visited.append(start)
     came_from = dict()
     came_from[start] = None
     
     while len(frontier) != 0:
         current = frontier.pop(0)
+        if current == goal:
+            break
         for next in graph_neighbors(current):
             if next not in came_from:
                 frontier.append(next)
+                visited.append(next)
                 came_from[next] = current
                 if current == goal:
                     break
@@ -141,28 +171,35 @@ def bfs(start, goal):
     return makePath(start, goal, came_from)
 
 def dfs(start, goal):
+    global visited
     stack = []
     stack.append(start)
+    visited.append(start)
     parent = {}
     parent[start] = None
     
     while len(stack) != 0:
         current = stack.pop()
+        if current == goal:
+            break
         for neighbor in graph_neighbors(current):
             if neighbor not in parent:
+                visited.append(neighbor)
                 stack.append(neighbor)
                 parent[neighbor] = current
-                if current == goal:
+                if neighbor == goal:
                     break
                 
     return makePath(start, goal, parent)
 
 def dijkstra(start, goal):
+    global visited
     heap = []
     neighbors = []
     came_from = dict()
     cost_so_far = dict()
     
+    visited.append(start)
     came_from[start] = None
     cost_so_far[start] = 0
     heapq.heappush(heap, (0, start))
@@ -174,6 +211,7 @@ def dijkstra(start, goal):
         for next in graph_neighbors(current):
             new_cost = cost_so_far[current] + mapa[int(current[1])][int(current[0])]
             if next not in cost_so_far or new_cost < cost_so_far[next]:
+                visited.append(next)
                 cost_so_far[next] = new_cost
                 cost = new_cost
                 heapq.heappush(heap, (cost, next))
@@ -183,6 +221,7 @@ def dijkstra(start, goal):
 
 def aEstrela(start, goal):
     global mapa
+    global visited
     
     heap = []
     heapq.heappush(heap, (0, start))
@@ -190,6 +229,7 @@ def aEstrela(start, goal):
     cost_so_far = dict()
     came_from[start] = None
     cost_so_far[start] = 0
+    visited.append(start)
     
     while len(heap) != 0:
         current = heapq.heappop(heap)[1]
@@ -200,6 +240,7 @@ def aEstrela(start, goal):
         for next in graph_neighbors(current):
             new_cost = cost_so_far[current] + mapa[int(next[1])][int(next[0])]
             if next not in cost_so_far or new_cost < cost_so_far[next]:
+                visited.append(next)
                 cost_so_far[next] = new_cost
                 priority = new_cost + heuristic(goal, next)
                 heapq.heappush(heap, (priority, next))
@@ -208,11 +249,13 @@ def aEstrela(start, goal):
     return makePath(start, goal, came_from)
 
 def greedy(start, goal):
+    global visited
+    
     heap = []
     heapq.heappush(heap, (0, start))
     came_from = dict()
     came_from[start] = None
-    visited = list()
+    visited.append(start)
 
     while len(heap) != 0:
         current = heapq.heappop(heap)[1]
@@ -270,9 +313,6 @@ def graph_neighbors(current):
     for n in removidos:
         neighbors.remove(n)
     return neighbors
-    
-
-
     
 def drawGraph():
     global inc
